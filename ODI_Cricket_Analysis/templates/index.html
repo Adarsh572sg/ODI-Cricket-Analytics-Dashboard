@@ -1,0 +1,332 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>ODI Cricket Analytics Dashboard</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+
+<header>
+    <h1>🏏 ODI CRICKET ANALYTICS</h1>
+    <p>International One Day Cricket Performance Dashboard</p>
+    <span class="header-tag">PLAYER PROFILES | WORLD CUP HISTORY</span>
+</header>
+
+<main>
+
+    <!-- KPI CARDS -->
+    <section class="kpi-container">
+
+        <div class="kpi-card">
+            <h3>Total Players</h3>
+            <h2>{{ players }}</h2>
+        </div>
+
+        <div class="kpi-card">
+            <h3>Total Runs</h3>
+            <h2>{{ "{:,}".format(runs) }}</h2>
+        </div>
+
+        <div class="kpi-card">
+            <h3>Total Centuries</h3>
+            <h2>{{ centuries }}</h2>
+        </div>
+
+        <div class="kpi-card">
+            <h3>Total Matches</h3>
+            <h2>{{ "{:,}".format(matches) }}</h2>
+        </div>
+
+        <div class="kpi-card">
+            <h3>Average Runs</h3>
+            <h2>{{ average_runs }}</h2>
+        </div>
+
+        <div class="kpi-card">
+            <h3>Average Strike Rate</h3>
+            <h2>{{ average_strike_rate }}</h2>
+        </div>
+
+    </section>
+
+
+    <!-- RECORD HOLDERS -->
+    <section class="section">
+
+        <h2>🏆 ODI RECORD HOLDERS</h2>
+
+        <div class="record-container">
+
+            <div class="record-card">
+                <h3>Highest Run Scorer</h3>
+                <h2>{{ highest_run_scorer.Player }}</h2>
+                <p>{{ highest_run_scorer.Total_Runs }} Runs</p>
+            </div>
+
+            <div class="record-card">
+                <h3>Highest Average</h3>
+                <h2>{{ highest_average.Player }}</h2>
+                <p>{{ highest_average.Batting_Average }}</p>
+            </div>
+
+            <div class="record-card">
+                <h3>Highest Strike Rate</h3>
+                <h2>{{ highest_strike_rate.Player }}</h2>
+                <p>{{ highest_strike_rate.Strike_Rate }}</p>
+            </div>
+
+            <div class="record-card">
+                <h3>Most Centuries</h3>
+                <h2>{{ most_centuries.Player }}</h2>
+                <p>{{ most_centuries.Centuries_100s }} Centuries</p>
+            </div>
+
+        </div>
+    </section>
+
+
+    <!-- ALL PLAYER PROFILE CARDS -->
+    <section class="section">
+
+        <h2>⭐ ODI PLAYER PROFILES</h2>
+        <p class="section-description">
+            Explore batting statistics of all players in the dataset.
+        </p>
+
+        <div class="filter-container">
+
+            <input
+                type="text"
+                id="playerSearch"
+                placeholder="Search player..."
+                onkeyup="filterPlayers()">
+
+            <select id="countryFilter" onchange="filterPlayers()">
+                <option value="">All Countries</option>
+
+                {% for country in countries %}
+                <option value="{{ country }}">{{ country }}</option>
+                {% endfor %}
+
+            </select>
+
+        </div>
+
+        <div class="player-container" id="playerContainer">
+
+            {% for p in all_players %}
+
+            <div class="player-card"
+                 data-player="{{ p.Player|lower }}"
+                 data-country="{{ p.Country|lower }}">
+
+                {% if p.image %}
+
+                <img
+                    src="{{ url_for('static', filename='images/players/' ~ p.image) }}"
+                    alt="{{ p.Player }}"
+                    class="player-image">
+
+                {% else %}
+
+                <div class="no-image">🏏</div>
+
+                {% endif %}
+
+                <h3>{{ p.Player }}</h3>
+
+                <span class="country-label">{{ p.Country }}</span>
+
+                <div class="player-stats">
+
+                    <p><span>Total Runs</span>
+                       <strong>{{ p.Total_Runs }}</strong></p>
+
+                    <p><span>Matches</span>
+                       <strong>{{ p.Matches_Played }}</strong></p>
+
+                    <p><span>Centuries</span>
+                       <strong>{{ p.Centuries_100s }}</strong></p>
+
+                    <p><span>Average</span>
+                       <strong>{{ p.Batting_Average }}</strong></p>
+
+                    <p><span>Strike Rate</span>
+                       <strong>{{ p.Strike_Rate }}</strong></p>
+
+                </div>
+
+            </div>
+
+            {% endfor %}
+
+        </div>
+
+        <p id="noPlayers" class="empty-message" style="display:none;">
+            No players found.
+        </p>
+
+    </section>
+
+
+    <!-- COUNTRY PERFORMANCE -->
+    <section class="section">
+
+        <h2>🌍 COUNTRY PERFORMANCE</h2>
+
+        <div class="table-wrapper">
+
+            <table>
+                <tr>
+                    <th>Country</th>
+                    <th>Total Players</th>
+                    <th>Total Runs</th>
+                    <th>Total Centuries</th>
+                </tr>
+
+                {% for c in country_data %}
+                <tr>
+                    <td>{{ c.Country }}</td>
+                    <td>{{ c.Players }}</td>
+                    <td>{{ "{:,}".format(c.Total_Runs|int) }}</td>
+                    <td>{{ c.Total_Centuries }}</td>
+                </tr>
+                {% endfor %}
+
+            </table>
+
+        </div>
+    </section>
+
+
+    <!-- ODI WORLD CUP WINNERS TIMELINE -->
+    <section class="section world-cup-section">
+
+        <h2>🏆 ODI WORLD CUP WINNERS TIMELINE</h2>
+
+        <p class="section-description">
+            Every Men's ODI Cricket World Cup champion from 1975 to 2023.
+        </p>
+
+        <div class="world-cup-timeline">
+
+            {% for w in world_cup_winners %}
+
+            <div class="timeline-item">
+
+                <div class="timeline-year">
+                    {{ w.Year }}
+                </div>
+
+                <div class="timeline-card">
+
+                    <span class="trophy">🏆</span>
+
+                    <h3>{{ w.Winner }}</h3>
+
+                    <p class="winner-label">WORLD CUP CHAMPION</p>
+
+                    <div class="timeline-details">
+                        <p>Runner-up: <strong>{{ w.Runner_Up }}</strong></p>
+                        <p>Winning Captain: <strong>{{ w.Captain }}</strong></p>
+                    </div>
+
+                </div>
+
+            </div>
+
+            {% endfor %}
+
+        </div>
+
+    </section>
+
+
+    <!-- WORLD CUP TITLE COUNT -->
+    <section class="section">
+
+        <h2>🥇 WORLD CUP TITLES BY TEAM</h2>
+
+        <div class="title-container">
+
+            {% for t in team_titles %}
+
+            <div class="title-card">
+
+                <h3>{{ t.Team }}</h3>
+
+                <h2>{{ t.Titles }}</h2>
+
+                <p>World Cup Titles</p>
+
+            </div>
+
+            {% endfor %}
+
+        </div>
+
+    </section>
+
+
+</main>
+
+
+<footer>
+
+    <h3>🏏 ODI CRICKET ANALYTICS</h3>
+
+    <p>Developed using Python | Pandas | Flask | HTML | CSS</p>
+
+    <p>Player Statistics and ODI World Cup History</p>
+
+</footer>
+
+
+<script>
+
+function filterPlayers() {
+
+    let search = document
+        .getElementById("playerSearch")
+        .value.toLowerCase();
+
+    let country = document
+        .getElementById("countryFilter")
+        .value.toLowerCase();
+
+    let cards = document.getElementsByClassName("player-card");
+
+    let visibleCount = 0;
+
+    for (let i = 0; i < cards.length; i++) {
+
+        let player = cards[i].getAttribute("data-player");
+        let team = cards[i].getAttribute("data-country");
+
+        let playerMatch = player.includes(search);
+        let countryMatch = country === "" || team === country;
+
+        if (playerMatch && countryMatch) {
+
+            cards[i].style.display = "";
+            visibleCount++;
+
+        } else {
+
+            cards[i].style.display = "none";
+
+        }
+    }
+
+    document.getElementById("noPlayers").style.display =
+        visibleCount === 0 ? "block" : "none";
+}
+
+</script>
+
+</body>
+</html>
